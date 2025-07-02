@@ -9,6 +9,8 @@ cd indodev_facebook_group_bot
 pip install -r requirements.txt
 </code>
 
+<br>
+
 - Edit login.txt , replace your_facebook_email@email.com with your facebook username / email then replace your_facebook_password with your facebook password.
 - Modify group lists at groups.txt
 - Modify post.txt
