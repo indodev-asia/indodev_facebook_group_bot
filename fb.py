@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import time
-import os
+import time, os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -18,12 +17,13 @@ LOGIN_FILE = "login.txt"
 GROUPS_FILE = "groups.txt"
 POST_FILE = "post.txt"
 
-
+custom_user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
 DRIVER_SERVICE = webdriver.chrome.service.Service()
 OPTIONS = webdriver.ChromeOptions()
 
 OPTIONS.add_argument("--disable-notifications")
 OPTIONS.add_argument("--incognito") 
+OPTIONS.add_argument(f"user-agent={custom_user_agent}")
 
 def bot_banner():
     try:
@@ -77,9 +77,8 @@ def login_facebook(driver, email, password):
         login_button = driver.find_element(By.NAME, "login")
         login_button.click()
         print("Clicked login button.")
-        print("[+] sleeping 15 seconds to solve captcha")
-        time.sleep(15)
-        WebDriverWait(driver, 30).until(
+        time.sleep(2)
+        WebDriverWait(driver, 10).until(
             EC.url_contains("facebook.com")
         )
         print("Login attempt completed.")
@@ -144,7 +143,11 @@ def post_to_group(driver, group_url, post_content):
             print("[-] failed to locate post composer")
             raise e
         try:
-            post_composer_input.send_keys(post_content)
+            try:
+                post_composer_input.send_keys(post_content)
+            except:
+                post_composer_input.send_keys(post_content)
+                pass
             print("Entered post content.")
         except Exception as e:
             print("[-] failed to post")
@@ -181,6 +184,7 @@ def post_to_group(driver, group_url, post_content):
 
 def main():
     bot_banner()
+    time.sleep(4)
     print("[+] reading login credentials")
     login_credentials = read_config_file(LOGIN_FILE)
     if not login_credentials or len(login_credentials) < 2:
@@ -207,8 +211,11 @@ def main():
         driver.maximize_window() 
         print("[+] login to facebook")
         if not login_facebook(driver, email, password):
-            print("Failed to log in to Facebook. Exiting.")
-            return
+            try:
+                login_facebook(driver, email, password)
+            except:
+                print("Failed to log in to Facebook. Exiting.")
+                return
 
         for url in group_urls:
             post_to_group(driver, url, post_content)
